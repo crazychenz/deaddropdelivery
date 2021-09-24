@@ -1,0 +1,6 @@
+{
+  "scheme": "https",
+  "hostname": "hostname.com",
+  "dropoffkey": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+  "pickupkey":  "eeeeeeee-dddd-cccc-bbbb-aaaaaaaaaaaa"
+}
