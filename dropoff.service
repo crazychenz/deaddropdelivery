@@ -1,0 +1,14 @@
+[Unit]
+Description=Dropoff
+
+[Service]
+ExecStart=/opt/dropoff/serve.sh
+Restart=always
+User=user
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=user
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+WorkingDirectory=/opt/dropoff
+
+[Install]
+WantedBy=multi-user.target
