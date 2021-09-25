@@ -1,0 +1,2 @@
+# Poll once every 5 minutes
+*/5 * * * * /projects/cicd/deaddropdelivery/pickup/pickup.sh crazychenz/vinnie.work
