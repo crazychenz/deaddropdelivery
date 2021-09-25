@@ -1,5 +1,6 @@
 #!/bin/bash
 
+REPOPREFIX=/projects/cicd/
 REPONAME=$1
 REPOHASH=$(echo -n "$REPONAME" | sha1sum | awk '{print $1}')
 echo REPOHASH: $REPOHASH
@@ -37,14 +38,14 @@ THIS_PICKUP_COMMIT=$(echo $VALUE | cut -d '-' -f3)
 
 if [ ! -e $REPOHASH ]; then
   echo No clone of repo, cloning now.
-  git clone https://github.com/$REPONAME.git $REPOHASH
+  git clone https://github.com/$REPONAME.git $REPOPREFIX$REPOHASH
   if [ $? -ne 0 ]; then
     echo "Failed to clone repository. Exiting."
     exit 1
   fi
 fi
 
-pushd $REPOHASH >/dev/null
+pushd $REPOPREFIX$REPOHASH >/dev/null
 
   echo Pulling $REPONAME
   git pull 2>/dev/null
