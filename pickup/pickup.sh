@@ -38,7 +38,7 @@ echo $VALUE | cut -d '-' -f2 > $PICKUP_FPATH/state/$REPOHASH-prev-pickup
 # This is the commit that we want to checkout
 THIS_PICKUP_COMMIT=$(echo $VALUE | cut -d '-' -f3)
 
-if [ ! -e $REPOHASH ]; then
+if [ ! -e $REPOPREFIX$REPOHASH ]; then
   echo No clone of repo, cloning now.
   GIT_SSH_COMMAND="ssh -i $IDENTITY_FPATH" \
     git clone git@github.com:$REPONAME.git $REPOPREFIX$REPOHASH
