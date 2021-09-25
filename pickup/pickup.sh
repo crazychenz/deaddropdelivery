@@ -1,21 +1,23 @@
 #!/bin/bash
 
+IDENTITY_FPATH=/projects/cicd/deaddropdelivery/pickup/ssh/id_rsa
+PICKUP_FPATH=/projects/cicd/deaddropdelivery/pickup/
 REPOPREFIX=/projects/cicd/
 REPONAME=$1
 REPOHASH=$(echo -n "$REPONAME" | sha1sum | awk '{print $1}')
 echo REPOHASH: $REPOHASH
 
 #rm state/*
-if [ ! -e state/$REPOHASH-prev-pickup ]; then
+if [ ! -e $PICKUP_FPATH/state/$REPOHASH-prev-pickup ]; then
   echo No existing state, creating a new one.
-  echo 0 > state/$REPOHASH-prev-pickup
+  echo 0 > $PICKUP_FPATH/state/$REPOHASH-prev-pickup
 fi
 
 # This fetches the prev pickup time (that we don't want)
-PREV_PICKUP=$(cat state/$REPOHASH-prev-pickup)
+PREV_PICKUP=$(cat $PICKUP_FPATH/state/$REPOHASH-prev-pickup)
 
 # This is the command to fetch the commit data.
-JOB=$(curl -s -X GET $(cat pickup-url.cfg)/$REPOHASH/$PREV_PICKUP)
+JOB=$(curl -s -X GET $(cat $PICKUP_FPATH/pickup-url.cfg)/$REPOHASH/$PREV_PICKUP)
 if [ $? -ne 0 ]; then
   echo "Failed to fetch data from pickup end point. Exiting."
   exit 1
@@ -31,14 +33,16 @@ fi
 VALUE=$(echo $JOB | cut -d '/' -f2)
 
 # Log that we got this commit so we don't attempt another fetch.
-echo $VALUE | cut -d '-' -f2 > state/$REPOHASH-prev-pickup
+echo $VALUE | cut -d '-' -f2 > $PICKUP_FPATH/state/$REPOHASH-prev-pickup
 
 # This is the commit that we want to checkout
 THIS_PICKUP_COMMIT=$(echo $VALUE | cut -d '-' -f3)
 
 if [ ! -e $REPOHASH ]; then
   echo No clone of repo, cloning now.
-  git clone https://github.com/$REPONAME.git $REPOPREFIX$REPOHASH
+  GIT_SSH_COMMAND="ssh -i $IDENTITY_FPATH" \
+    git clone git@github.com:$REPONAME.git $REPOPREFIX$REPOHASH
+  #git clone https://github.com/$REPONAME.git $REPOPREFIX$REPOHASH
   if [ $? -ne 0 ]; then
     echo "Failed to clone repository. Exiting."
     exit 1
@@ -48,7 +52,7 @@ fi
 pushd $REPOPREFIX$REPOHASH >/dev/null
 
   echo Pulling $REPONAME
-  git pull 2>/dev/null
+  GIT_SSH_COMMAND="ssh -i $IDENTITY_FPATH" git pull 2>/dev/null
   #if [ $? -ne 0 ]; then
   #  echo "$? Failed to pull repository updates. Exiting."
   #  exit 1
@@ -61,10 +65,19 @@ pushd $REPOPREFIX$REPOHASH >/dev/null
     exit 1
   fi
 
+  if [ -e deaddropdelivery.sh ]; then
+    echo Starting CI/CD script.
+    # TODO: Consider adding a timeout.
+    ./deaddropdelivery.sh
+    if [ $? -ne 0 ]; then
+      echo "Failed to complete CI/CD script. Exiting."
+      exit 1
+    fi
+  fi
+
 popd >/dev/null
 
 
-
-
+exit 0
 
 
